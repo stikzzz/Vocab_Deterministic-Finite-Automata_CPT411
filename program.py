@@ -1,235 +1,228 @@
-import string
+class State:
+    def __init__(self, name, is_initial=False, is_final=False):
+        self.name = name
+        self.is_initial = is_initial
+        self.is_final = is_final
 
-def checkState1(word):
-    if len(word) > 0 and word[0] == 'a':
-        return stateA(word[1:])
-    elif len(word) > 0 and word[0] == 'b':
-        return stateB(word[1:])
-    elif len(word) > 0 and word[0] == 'c':
-        return stateC(word[1:])
-    elif len(word) > 0 and word[0] == 'f':
-        return stateF(word[1:])
-    elif len(word) > 0 and word[0] == 'h':
-        return stateH(word[1:])
-    elif len(word) > 0 and word[0] == 'i':
-        return stateI(word[1:])
-    elif len(word) > 0 and word[0] == 'm':
-        return stateM(word[1:])
-    elif len(word) > 0 and word[0] == 'o':
-        return stateO(word[1:])
-    elif len(word) > 0 and word[0] == 's':
-        return stateS(word[1:])
-    elif len(word) > 0 and word[0] == 't':
-        return stateT(word[1:])
-    elif len(word) > 0 and word[0] == 'w':
-        return stateW(word[1:])
-    elif len(word) > 0 and word[0] == 'y':
-        return stateY(word[1:])
-    return False
+        self.transitions = {}
 
-def stateA(word):
-    if len(word) == 0:
-        return True
-    elif len(word) > 0 and word[0] == 'n':
-        return stateA2(word[1:])
-    elif len(word) == 1 and word[0] == 't':
-        return True
-    return False
+    def add_transition(self, char, next_state):
+        self.transitions[char] = next_state
 
-def stateA2(word):
-    if len(word) == 0:
-        return True
-    elif len(word) > 0 and word[0] == 'd':
-        return True
-    return False
+    def process_input(self, char):
+        """
+        Returns the next State object if the character is accepted.
+        Returns None if there is no transition for this character (Trap State).
+        """
+        if char in self.transitions:
+            return self.transitions[char]
+        return None
 
-def stateB(word):
-    if len(word) > 0 and word[0] == 'u':
-        return stateB2(word[1:])
-    return False
+# --- Testing it out ---
+if __name__ == "__main__":
+    # 1. Create the states
+    q0 = State(name="q0", is_initial=True)
 
-def stateB2(word):
-    if len(word) == 1 and word[0] == 't':
-        return True
-    return False
+    # Build a DFA that accepts "a", "at", "an", "and"
+    q1 = State(name="q1", is_final=True) # accepts "a"
+    q0.add_transition('a', q1)
+    
+    q2 = State(name="q2", is_final=True) # accepts "an"
+    q1.add_transition('n', q2)
+    
+    q3 = State(name="q3", is_final=True) # accepts "and"
+    q2.add_transition('d', q3)
+    
+    q4 = State(name="q4", is_final=True) # accepts "at"
+    q1.add_transition('t', q4)
 
-def stateC(word):
-    if len(word) > 0 and word[0] == 'a':
-        return stateC2(word[1:])
-    return False
+    # DFA that accepts "but"
+    q5 = State(name="q5")
+    q0.add_transition('b', q5)
+    
+    q6 = State(name="q6")
+    q5.add_transition('u', q6)
+    
+    q7 = State(name="q7", is_final=True) # accepts "but"
+    q6.add_transition('t', q7)
 
-def stateC2(word):
-    if len(word) == 1 and word[0] == 'n':
-        return True
-    return False
+    # DFA that accepts "can"
+    q8 = State(name="q8")
+    q0.add_transition('c', q8)
+    
+    q9 = State(name="q9")
+    q8.add_transition('a', q9)
+    
+    q10 = State(name="q10", is_final=True) # accepts "can"
+    q9.add_transition('n', q10)
 
-def stateF(word):
-    if len(word) > 0 and word[0] == 'r':
-        return stateF2(word[1:])
-    return False
+    # DFA that accepts "from"
+    q11 = State(name="q11")
+    q0.add_transition('f', q11)
+    
+    q12 = State(name="q12")
+    q11.add_transition('r', q12)
+    
+    q13 = State(name="q13")
+    q12.add_transition('o', q13)
+    
+    q14 = State(name="q14", is_final=True) # accepts "from"
+    q13.add_transition('m', q14)
 
-def stateF2(word):
-    if len(word) > 0 and word[0] == 'o':
-        return stateF3(word[1:])
-    return False
+    # DFA that accepts "he"
+    q15 = State(name="q15")
+    q0.add_transition('h', q15)
+    
+    q16 = State(name="q16", is_final=True) # accepts "he"
+    q15.add_transition('e', q16)
 
-def stateF3(word):
-    if len(word) == 1 and word[0] == 'm': # "from"
-        return True
-    return False
+    # DFA that accepts "i", "in"
+    q17 = State(name="q17", is_final=True) # accepts 'i'
+    q0.add_transition('i', q17)
+    
+    q18 = State(name="q18", is_final=True) # accepts 'in'
+    q17.add_transition('n', q18)
 
-def stateH(word):
-    if len(word) == 1 and word[0] == 'e': # "he"
-        return True
-    return False
+    # DFA that accepts "my", "may", "must"
+    q19 = State(name="q19")
+    q0.add_transition('m', q19)
+    
+    q20 = State(name="q20", is_final=True) # accepts 'my'
+    q19.add_transition('y', q20)
+    
+    q21 = State(name="q21")
+    q19.add_transition('a', q21)
+    
+    q22 = State(name="q22", is_final=True) # accepts 'may'
+    q21.add_transition('y', q22)
+    
+    q23 = State(name="q23")
+    q19.add_transition('u', q23)
+    
+    q24 = State(name="q24")
+    q23.add_transition('s', q24)
+    
+    q25 = State(name="q25", is_final=True) # accepts 'must'
+    q24.add_transition('t', q25)
 
-def stateI(word):
-    if len(word) == 0:
-        return True # "i"
-    elif len(word) == 1 and word[0] == 'n': # "in"
-        return True
-    return False
+    # DFA that accepts "on", "or"
+    q26 = State(name="q26")
+    q0.add_transition('o', q26)
+    
+    q27 = State(name="q27", is_final=True) # accepts 'on'
+    q26.add_transition('n', q27)
+    
+    q28 = State(name="q28", is_final=True) # accepts 'or'
+    q26.add_transition('r', q28)
 
-def stateM(word):
-    if len(word) == 1 and word[0] == 'y':  
-        return True # "my"
-    elif len(word) > 0 and word[0] == 'a':
-        return stateM_A(word[1:]) 
-    elif len(word) > 0 and word[0] == 'u':
-        return stateM_U(word[1:]) 
-    return False
+    # DFA that accepts "she", "so", "should"
+    q29 = State(name="q29")
+    q0.add_transition('s', q29)
+    
+    q30 = State(name="q30", is_final=True) # accepts 'so'
+    q29.add_transition('o', q30)
+    
+    q31 = State(name="q31")
+    q29.add_transition('h', q31)
+    
+    q32 = State(name="q32", is_final=True) # accepts 'she'
+    q31.add_transition('e', q32)
+    
+    q33 = State(name="q33")
+    q31.add_transition('o', q33)
+    
+    q34 = State(name="q34")
+    q33.add_transition('u', q34)
+    
+    q35 = State(name="q35")
+    q34.add_transition('l', q35)
+    
+    q36 = State(name="q36", is_final=True) # accepts 'should'
+    q35.add_transition('d', q36)
 
-def stateM_A(word):
-    if len(word) == 1 and word[0] == 'y': # "may"
-        return True 
-    return False
+    # DFA that accepts "the", "this", "they", "to"
+    q37 = State(name="q37")
+    q0.add_transition('t', q37)
+    
+    q38 = State(name="q38", is_final=True) # accepts 'to'
+    q37.add_transition('o', q38)
+    
+    q39 = State(name="q39")
+    q37.add_transition('h', q39)
+    
+    q40 = State(name="q40", is_final=True) # accepts 'the'
+    q39.add_transition('e', q40)
+    
+    q41 = State(name="q41", is_final=True) # accepts 'they'
+    q40.add_transition('y', q41)
+    
+    q42 = State(name="q42")
+    q39.add_transition('i', q42)
+    
+    q43 = State(name="q43", is_final=True) # accepts 'this'
+    q42.add_transition('s', q43)
 
-def stateM_U(word):
-    if len(word) > 0 and word[0] == 's':
-        return stateM_U2(word[1:])
-    return False
+    # DFA that accepts "we", "will"
+    q44 = State(name="q44")
+    q0.add_transition('w', q44)
+    
+    q45 = State(name="q45", is_final=True) # accepts 'we'
+    q44.add_transition('e', q45)
+    
+    q46 = State(name="q46")
+    q44.add_transition('i', q46)
+    
+    q47 = State(name="q47")
+    q46.add_transition('l', q47)
+    
+    q48 = State(name="q48", is_final=True) # accepts 'will'
+    q47.add_transition('l', q48)
 
-def stateM_U2(word):
-    if len(word) == 1 and word[0] == 't': # "must"
-        return True 
-    return False
+    # DFA that accepts "you"
+    q49 = State(name="q49")
+    q0.add_transition('y', q49)
+    
+    q50 = State(name="q50")
+    q49.add_transition('o', q50)
+    
+    q51 = State(name="q51", is_final=True) # accepts 'you'
+    q50.add_transition('u', q51)
 
-def stateO(word):
-    if len(word) == 1 and word[0] == 'n': # "on"
-        return True 
-    elif len(word) == 1 and word[0] == 'r': # "or"
-        return True 
-    return False
-
-def stateS(word):
-    if len(word) > 0 and word[0] == 'h':
-        return stateS_H(word[1:]) 
-    elif len(word) == 1 and word[0] == 'o': # "so"
-        return True 
-    return False
-
-def stateS_H(word):
-    if len(word) == 1 and word[0] == 'e': # "she"
-        return True 
-    elif len(word) > 0 and word[0] == 'o': 
-        return stateS_H2(word[1:]) 
-    return False
-
-def stateS_H2(word):
-    if len(word) > 0 and word[0] == 'u':
-        return stateS_H3(word[1:])
-    return False
-
-def stateS_H3(word):
-    if len(word) > 0 and word[0] == 'l':
-        return stateS_H4(word[1:])
-    return False
-
-def stateS_H4(word):
-    if len(word) == 1 and word[0] == 'd': # "should"
-        return True 
-    return False
-
-def stateT(word):
-    if len(word) > 0 and word[0] == 'h':
-        return stateT_H(word[1:]) 
-    elif len(word) == 1 and word[0] == 'o': # "to"
-        return True 
-    return False
-
-def stateT_H(word):
-    if len(word) > 0 and word[0] == 'e':
-        return stateT_HE(word[1:])
-    elif len(word) > 0 and word[0] == 'i':
-        return stateT_HI(word[1:])
-    return False
-
-def stateT_HE(word):
-    if len(word) == 0:
-        return True # "the"
-    elif len(word) == 1 and word[0] == 'y': # "they"
-        return True 
-    return False
-
-def stateT_HI(word):
-    if len(word) == 1 and word[0] == 's': # "this"
-        return True 
-    return False
-
-def stateW(word):
-    if len(word) == 1 and word[0] == 'e': # "we"
-        return True 
-    elif len(word) > 0 and word[0] == 'i': 
-        return stateW_I(word[1:]) 
-    return False
-
-def stateW_I(word):
-    if len(word) > 0 and word[0] == 'l':
-        return stateW_IL(word[1:])
-    return False
-
-def stateW_IL(word):
-    if len(word) == 1 and word[0] == 'l': # "will"
-        return True 
-    return False
-
-def stateY(word):
-    if len(word) > 0 and word[0] == 'o':
-        return stateY_O(word[1:])
-    return False
-
-def stateY_O(word):
-    if len(word) == 1 and word[0] == 'u': # "you"
-        return True 
-    return False
-
-# take input
-filename = "text3.txt"
-try:
-    with open(filename, 'r', encoding='utf-8') as file:
-        text = file.read()
-        
-        # 1. separate each word from the text paragraph
-        words = text.split()
-        
-        for w in words:
-            # Stripping punctuation around the word and converting to lowercase
-            clean_word = w.strip(string.punctuation).lower()
-            if not clean_word:
-                continue
+    import string
+    filename = "text4.txt"
+    try:
+        with open(filename, 'r', encoding='utf-8') as file:
+            text = file.read()
+            words = text.split()
             
-            # 2. tokenize into character, separate by space bar.
-            # Example: "and" -> "a n d"
-            tokens = " ".join(list(clean_word))
-            print(f"Word: {clean_word}")
-            print(f"Tokens: {tokens}")
-            
-            # 3. create state if its string "and" ONLY.
-            # accept or reject
-            if checkState1(clean_word):
-                print("Status: accept\n")
-            else:
-                print("Status: reject\n")
-
-except FileNotFoundError:
-    print("File not found.")
+            for w in words:
+                clean_word = w.strip(string.punctuation).lower()
+                if not clean_word:
+                    continue
+                
+                print(f"\n=============== Simulating Input: '{clean_word}' ===============")
+                current_state = q0
+                print("Press enter to continue next state...\n")
+                
+                for char in clean_word:
+                    prev_state_name = current_state.name
+                    next_state = current_state.process_input(char)
+                    
+                    if next_state is None:
+                        print(f"State: {prev_state_name} | Processing: {char} | next state: Trap")
+                        input()
+                        print("\n=> Hit a Trap State! Input rejected.")
+                        current_state = None
+                        break
+                    else:
+                        print(f"State: {prev_state_name} | Processing: {char} | next state: {next_state.name}")
+                        input()
+                        current_state = next_state
+                        
+                if current_state and current_state.is_final:
+                    print(f"\n=> Reached {current_state.name} which is a Final State. Word ACCEPTED!")
+                elif current_state:
+                    print("\n=> Word REJECTED (Not in a final state).")
+                    
+    except FileNotFoundError:
+        print(f"File {filename} not found.")
