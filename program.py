@@ -1,4 +1,4 @@
-DEBUG = False  # Set to True to see step-by-step DFA simulation, False to skip and show results
+DEBUG = True  # Set to True to see step-by-step DFA simulation, False to skip and show results
 
 class State:
     def __init__(self, name, is_initial=False, is_final=False):
@@ -192,7 +192,7 @@ if __name__ == "__main__":
 
     import re
     import string
-    filename = "text2.txt"
+    filename = "text3.txt" # <------------- change this for any input file text
     try:
         with open(filename, 'r', encoding='utf-8') as file:
             text = file.read()
