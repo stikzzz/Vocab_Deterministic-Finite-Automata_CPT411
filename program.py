@@ -1,5 +1,7 @@
-DEBUG = False  # Set to True to see step-by-step DFA simulation, False to skip and show results
-
+DEBUG = True  # Set to True to see step-by-step DFA simulation, False to skip and show results
+import re
+import string
+filename = "text4.txt" # <------------- change this for any input file text
 class State:
     def __init__(self, name, is_initial=False, is_final=False):
         self.name = name
@@ -190,9 +192,7 @@ if __name__ == "__main__":
     q51 = State(name="q51", is_final=True) # accepts 'you'
     q50.add_transition('u', q51)
 
-    import re
-    import string
-    filename = "text2.txt"
+
     try:
         with open(filename, 'r', encoding='utf-8') as file:
             text = file.read()
