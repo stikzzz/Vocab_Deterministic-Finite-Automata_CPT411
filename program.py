@@ -190,25 +190,27 @@ if __name__ == "__main__":
     q51 = State(name="q51", is_final=True) # accepts 'you'
     q50.add_transition('u', q51)
 
+    import re
     import string
-    filename = "text4.txt"
+    filename = "text2.txt"
     try:
         with open(filename, 'r', encoding='utf-8') as file:
             text = file.read()
-            words = text.split()
+            token_matches = re.finditer(r"\S+", text)
 
             # Track accepted words and their positions
-            accepted_words = []  # List of (clean_word, position_in_original_text)
+            accepted_words = []  # List of (start_pos, end_pos) spans in original text
             occurrences = {}  # {word: count}
             positions = {}    # {word: [list of starting positions]}
 
-            for w in words:
-                clean_word = w.strip(string.punctuation).lower()
+            for token_match in token_matches:
+                original_word = token_match.group(0)
+                word_position = token_match.start()
+                word_end = token_match.end()
+
+                clean_word = original_word.strip(string.punctuation).lower()
                 if not clean_word:
                     continue
-
-                # Find position of this word in the original text
-                word_position = text.find(w)  # Find the word WITH punctuation to get accurate position
 
                 if DEBUG:
                     print(f"\n=============== Simulating Input: '{clean_word}' ===============")
@@ -236,7 +238,7 @@ if __name__ == "__main__":
                 if current_state and current_state.is_final:
                     if DEBUG:
                         print(f"\n=> Reached {current_state.name} which is a Final State. Word ACCEPTED!")
-                    accepted_words.append((clean_word, word_position))
+                    accepted_words.append((word_position, word_end))
                     # Track occurrences
                     if clean_word in occurrences:
                         occurrences[clean_word] += 1
@@ -256,22 +258,15 @@ if __name__ == "__main__":
             print("ORIGINAL TEXT WITH ACCEPTED WORDS HIGHLIGHTED (BOLD):")
             print("="*80)
 
-            highlighted_text = text
-            # Sort by position in reverse to maintain correct indices when replacing
-            sorted_words = sorted(accepted_words, key=lambda x: x[1], reverse=True)
-
-            for clean_word, pos in sorted_words:
-                if pos != -1:  # If word was found
-                    # Find the actual word with punctuation at this position
-                    original_word = text[pos:pos+len(clean_word)+1]  # Rough estimate
-                    # More accurately: find the end of the word (before punctuation/space)
-                    end_pos = pos
-                    while end_pos < len(text) and text[end_pos] not in string.whitespace:
-                        end_pos += 1
-                    original_word = text[pos:end_pos]
-
-                    bold_word = f"\033[1m{original_word}\033[0m"
-                    highlighted_text = highlighted_text[:pos] + bold_word + highlighted_text[end_pos:]
+            # Build highlighted output from original text spans to avoid index shifts.
+            highlighted_parts = []
+            last_index = 0
+            for start_pos, end_pos in accepted_words:
+                highlighted_parts.append(text[last_index:start_pos])
+                highlighted_parts.append(f"\033[1m{text[start_pos:end_pos]}\033[0m")
+                last_index = end_pos
+            highlighted_parts.append(text[last_index:])
+            highlighted_text = "".join(highlighted_parts)
 
             print(highlighted_text)
 
