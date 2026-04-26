@@ -1,3 +1,5 @@
+DEBUG = False  # Set to True to see step-by-step DFA simulation, False to skip and show results
+
 class State:
     def __init__(self, name, is_initial=False, is_final=False):
         self.name = name
@@ -181,10 +183,10 @@ if __name__ == "__main__":
     # DFA that accepts "you"
     q49 = State(name="q49")
     q0.add_transition('y', q49)
-    
+
     q50 = State(name="q50")
     q49.add_transition('o', q50)
-    
+
     q51 = State(name="q51", is_final=True) # accepts 'you'
     q50.add_transition('u', q51)
 
@@ -194,35 +196,100 @@ if __name__ == "__main__":
         with open(filename, 'r', encoding='utf-8') as file:
             text = file.read()
             words = text.split()
-            
+
+            # Track accepted words and their positions
+            accepted_words = []  # List of (clean_word, position_in_original_text)
+            occurrences = {}  # {word: count}
+            positions = {}    # {word: [list of starting positions]}
+
             for w in words:
                 clean_word = w.strip(string.punctuation).lower()
                 if not clean_word:
                     continue
-                
-                print(f"\n=============== Simulating Input: '{clean_word}' ===============")
+
+                # Find position of this word in the original text
+                word_position = text.find(w)  # Find the word WITH punctuation to get accurate position
+
+                if DEBUG:
+                    print(f"\n=============== Simulating Input: '{clean_word}' ===============")
+                    print("Press enter to continue next state...\n")
+
                 current_state = q0
-                print("Press enter to continue next state...\n")
-                
+
                 for char in clean_word:
                     prev_state_name = current_state.name
                     next_state = current_state.process_input(char)
-                    
+
                     if next_state is None:
-                        print(f"State: {prev_state_name} | Processing: {char} | next state: Trap")
-                        input()
-                        print("\n=> Hit a Trap State! Input rejected.")
+                        if DEBUG:
+                            print(f"State: {prev_state_name} | Processing: {char} | next state: Trap")
+                            input()
+                            print("\n=> Hit a Trap State! Input rejected.")
                         current_state = None
                         break
                     else:
-                        print(f"State: {prev_state_name} | Processing: {char} | next state: {next_state.name}")
-                        input()
+                        if DEBUG:
+                            print(f"State: {prev_state_name} | Processing: {char} | next state: {next_state.name}")
+                            input()
                         current_state = next_state
-                        
+
                 if current_state and current_state.is_final:
-                    print(f"\n=> Reached {current_state.name} which is a Final State. Word ACCEPTED!")
+                    if DEBUG:
+                        print(f"\n=> Reached {current_state.name} which is a Final State. Word ACCEPTED!")
+                    accepted_words.append((clean_word, word_position))
+                    # Track occurrences
+                    if clean_word in occurrences:
+                        occurrences[clean_word] += 1
+                    else:
+                        occurrences[clean_word] = 1
+                    # Track positions
+                    if clean_word in positions:
+                        positions[clean_word].append(word_position)
+                    else:
+                        positions[clean_word] = [word_position]
                 elif current_state:
-                    print("\n=> Word REJECTED (Not in a final state).")
-                    
+                    if DEBUG:
+                        print("\n=> Word REJECTED (Not in a final state).")
+
+            # === VISUALIZATION WITH BOLDFACE ===
+            print("\n" + "="*80)
+            print("ORIGINAL TEXT WITH ACCEPTED WORDS HIGHLIGHTED (BOLD):")
+            print("="*80)
+
+            highlighted_text = text
+            # Sort by position in reverse to maintain correct indices when replacing
+            sorted_words = sorted(accepted_words, key=lambda x: x[1], reverse=True)
+
+            for clean_word, pos in sorted_words:
+                if pos != -1:  # If word was found
+                    # Find the actual word with punctuation at this position
+                    original_word = text[pos:pos+len(clean_word)+1]  # Rough estimate
+                    # More accurately: find the end of the word (before punctuation/space)
+                    end_pos = pos
+                    while end_pos < len(text) and text[end_pos] not in string.whitespace:
+                        end_pos += 1
+                    original_word = text[pos:end_pos]
+
+                    bold_word = f"\033[1m{original_word}\033[0m"
+                    highlighted_text = highlighted_text[:pos] + bold_word + highlighted_text[end_pos:]
+
+            print(highlighted_text)
+
+            # === SUMMARY TABLE ===
+            print("\n" + "="*80)
+            print("SUMMARY TABLE: ACCEPTED WORDS")
+            print("="*80)
+            print(f"{'Word':<15} {'Occurrences':<15} {'Positions':<50}")
+            print("-"*80)
+
+            for word in sorted(occurrences.keys()):
+                count = occurrences[word]
+                pos_list = positions[word]
+                pos_str = ", ".join(map(str, pos_list))
+                print(f"{word:<15} {count:<15} {pos_str:<50}")
+
+            print("-"*80)
+            print(f"{'TOTAL':<15} {len(accepted_words):<15} {len(occurrences)} unique words found")
+
     except FileNotFoundError:
         print(f"File {filename} not found.")
