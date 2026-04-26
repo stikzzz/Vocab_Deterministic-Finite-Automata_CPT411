@@ -263,7 +263,7 @@ if __name__ == "__main__":
             last_index = 0
             for start_pos, end_pos in accepted_words:
                 highlighted_parts.append(text[last_index:start_pos])
-                highlighted_parts.append(f"\033[1m{text[start_pos:end_pos]}\033[0m")
+                highlighted_parts.append(f"\033[43m{text[start_pos:end_pos]}\033[0m")
                 last_index = end_pos
             highlighted_parts.append(text[last_index:])
             highlighted_text = "".join(highlighted_parts)
