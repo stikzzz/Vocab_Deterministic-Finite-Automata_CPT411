@@ -1,3 +1,5 @@
+DEBUG = False  # Set to True to see step-by-step DFA simulation, False to skip and show results
+
 class State:
     def __init__(self, name, is_initial=False, is_final=False):
         self.name = name
@@ -181,48 +183,108 @@ if __name__ == "__main__":
     # DFA that accepts "you"
     q49 = State(name="q49")
     q0.add_transition('y', q49)
-    
+
     q50 = State(name="q50")
     q49.add_transition('o', q50)
-    
+
     q51 = State(name="q51", is_final=True) # accepts 'you'
     q50.add_transition('u', q51)
 
+    import re
     import string
-    filename = "text4.txt"
+    filename = "text2.txt"
     try:
         with open(filename, 'r', encoding='utf-8') as file:
             text = file.read()
-            words = text.split()
-            
-            for w in words:
-                clean_word = w.strip(string.punctuation).lower()
+            token_matches = re.finditer(r"\S+", text)
+
+            # Track accepted words and their positions
+            accepted_words = []  # List of (start_pos, end_pos) spans in original text
+            occurrences = {}  # {word: count}
+            positions = {}    # {word: [list of starting positions]}
+
+            for token_match in token_matches:
+                original_word = token_match.group(0)
+                word_position = token_match.start()
+                word_end = token_match.end()
+
+                clean_word = original_word.strip(string.punctuation).lower()
                 if not clean_word:
                     continue
-                
-                print(f"\n=============== Simulating Input: '{clean_word}' ===============")
+
+                if DEBUG:
+                    print(f"\n=============== Simulating Input: '{clean_word}' ===============")
+                    print("Press enter to continue next state...\n")
+
                 current_state = q0
-                print("Press enter to continue next state...\n")
-                
+
                 for char in clean_word:
                     prev_state_name = current_state.name
                     next_state = current_state.process_input(char)
-                    
+
                     if next_state is None:
-                        print(f"State: {prev_state_name} | Processing: {char} | next state: Trap")
-                        input()
-                        print("\n=> Hit a Trap State! Input rejected.")
+                        if DEBUG:
+                            print(f"State: {prev_state_name} | Processing: {char} | next state: Trap")
+                            input()
+                            print("\n=> Hit a Trap State! Input rejected.")
                         current_state = None
                         break
                     else:
-                        print(f"State: {prev_state_name} | Processing: {char} | next state: {next_state.name}")
-                        input()
+                        if DEBUG:
+                            print(f"State: {prev_state_name} | Processing: {char} | next state: {next_state.name}")
+                            input()
                         current_state = next_state
-                        
+
                 if current_state and current_state.is_final:
-                    print(f"\n=> Reached {current_state.name} which is a Final State. Word ACCEPTED!")
+                    if DEBUG:
+                        print(f"\n=> Reached {current_state.name} which is a Final State. Word ACCEPTED!")
+                    accepted_words.append((word_position, word_end))
+                    # Track occurrences
+                    if clean_word in occurrences:
+                        occurrences[clean_word] += 1
+                    else:
+                        occurrences[clean_word] = 1
+                    # Track positions
+                    if clean_word in positions:
+                        positions[clean_word].append(word_position)
+                    else:
+                        positions[clean_word] = [word_position]
                 elif current_state:
-                    print("\n=> Word REJECTED (Not in a final state).")
-                    
+                    if DEBUG:
+                        print("\n=> Word REJECTED (Not in a final state).")
+
+            # === VISUALIZATION WITH BOLDFACE ===
+            print("\n" + "="*80)
+            print("ORIGINAL TEXT WITH ACCEPTED WORDS HIGHLIGHTED (BOLD):")
+            print("="*80)
+
+            # Build highlighted output from original text spans to avoid index shifts.
+            highlighted_parts = []
+            last_index = 0
+            for start_pos, end_pos in accepted_words:
+                highlighted_parts.append(text[last_index:start_pos])
+                highlighted_parts.append(f"\033[1m{text[start_pos:end_pos]}\033[0m")
+                last_index = end_pos
+            highlighted_parts.append(text[last_index:])
+            highlighted_text = "".join(highlighted_parts)
+
+            print(highlighted_text)
+
+            # === SUMMARY TABLE ===
+            print("\n" + "="*80)
+            print("SUMMARY TABLE: ACCEPTED WORDS")
+            print("="*80)
+            print(f"{'Word':<15} {'Occurrences':<15} {'Positions':<50}")
+            print("-"*80)
+
+            for word in sorted(occurrences.keys()):
+                count = occurrences[word]
+                pos_list = positions[word]
+                pos_str = ", ".join(map(str, pos_list))
+                print(f"{word:<15} {count:<15} {pos_str:<50}")
+
+            print("-"*80)
+            print(f"{'TOTAL':<15} {len(accepted_words):<15} {len(occurrences)} unique words found")
+
     except FileNotFoundError:
         print(f"File {filename} not found.")
