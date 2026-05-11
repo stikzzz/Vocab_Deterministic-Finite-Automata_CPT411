@@ -33,3 +33,13 @@ Simply replace `"text4.txt"` with the name or path of your desired input file (e
   - `DEBUG = False`: Skips the interactive prompts, instantly processes the entire document, and jumps straight to the final output.
 - **Visual Highlighting:** Accepted vocabulary words are printed back in bold using terminal ANSI codes, so you can easily spot them in their original context.
 - **Summary Statistics:** Generates a clean table at the end of the script showing each accepted word, how many times it occurred, and its exact starting character positions in the source text.
+
+## DFA State Diagram
+<img width="777" height="831" alt="image" src="https://github.com/user-attachments/assets/713a2777-b936-4e32-9b0d-fa6b75598124" />
+
+## DFA State Diagram Sample with Trap State
+<img width="573" height="272" alt="image" src="https://github.com/user-attachments/assets/4fdb7cf8-0c03-4091-adac-b98129c8a9f5" />
+
+## Result
+<img width="886" height="775" alt="image" src="https://github.com/user-attachments/assets/87600c61-5296-4e92-85c5-296c2323f7e5" />
+
