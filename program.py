@@ -1,7 +1,7 @@
-DEBUG = True  # Set to True to see step-by-step DFA simulation, False to skip and show results
+DEBUG = False  # Set to True to see step-by-step DFA simulation, False to skip and show results
 import re
 import string
-filename = "text4.txt" # <------------- change this for any input file text
+filename = "text3.txt" # <------------- change this for any input file text
 class State:
     def __init__(self, name, is_initial=False, is_final=False):
         self.name = name
